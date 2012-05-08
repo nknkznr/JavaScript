@@ -1,0 +1,10 @@
+td.dead {
+    background-color: white;
+    width: 3px;
+    height: 3px;
+}
+td.live {
+    background-color: black;
+    width: 3px;
+    height: 3px;
+}
