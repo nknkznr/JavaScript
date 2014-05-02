@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="stylesheet/common.css">
+<meta charset="utf-8">
+<title>Life Game</title>
+<script type="text/javascript">
+
+var LifeGame = {
+    _cellSize: 0,
+    FPS: 10,
+
+    init: function(size) {
+        var target = document.getElementsByTagName("body").item(0),
+            table = document.createElement("table"),
+            tr,
+            td;
+
+        if(isNaN(size)) {
+            console.log("init error: no argument.");
+            return;
+        }
+        this._cellSize = size;
+
+        target.appendChild(table);
+        for(var idx=0; idx<size; idx++) {
+            tr = document.createElement("tr");
+            table.appendChild(tr);
+            for(var jdx=0; jdx<size; jdx++) {
+                td = document.createElement("td");
+                tr.appendChild(td);
+                td.setAttribute("id", idx + "_" + jdx);
+                td.setAttribute("class", "dead");
+            }
+        }
+    },
+
+    getScore: function(x, y) {
+        var range = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
+            score = 0,
+            targetX,
+            targetY,
+            targetCell;
+        for(var idx=0; idx<range.length; idx++) {
+            targetX = x + range[idx][ 0];
+            targetY = y + range[idx][ 1];
+
+            targetCell = document.getElementById(targetX + "_" + targetY);
+            if(targetCell) {
+                if (targetCell.className == "live") {
+                    score++;
+                }
+            }
+        }
+        return score;
+    },
+
+    deadOrAlive: function() {
+        var score = 0,
+            live = [],
+            dead = [];
+        for(var idx=0; idx<this._cellSize; idx++) {
+            for(var jdx=0; jdx<this._cellSize; jdx++) {
+                score = this.getScore(idx, jdx);
+
+                // 1点以下 または 4点以上は死滅
+                if(score<=1 || score>=4) {
+                    dead.push([idx,jdx]);
+                }
+                // 2点は維持
+                else
+                if(score==2) {
+                    // 何もしない
+                }
+                // 3点は誕生
+                else
+                if(score==3) {
+                    live.push([idx,jdx]);                        
+                }
+            }
+        }
+
+        for(var idx=0, len=dead.length; idx<len; idx++) {
+            this.setCell(dead[idx][0], dead[idx][1], "dead");
+        }
+        for(var idx=0, len=live.length; idx<len; idx++) {
+            this.setCell(live[idx][0], live[idx][1], "live");
+        }
+    },
+
+    setCell: function(x, y, classname) {
+        var targetCell = document.getElementById(x + "_" + y);
+        if(targetCell) {
+            targetCell.className = classname ;
+        }
+    },
+
+    getRandom: function() {
+        var targetCell;
+        for(var idx=0; idx<this._cellSize; idx++) {
+            for(var jdx=0; jdx<this._cellSize; jdx++) {
+                targetCell = document.getElementById(idx+ "_" + jdx);
+                if(targetCell) {
+                    if(parseInt(Math.random()*2) == 1) {
+                        targetCell.className = "live" ;
+                    }
+                }
+            }
+        }
+    }
+}
+
+window.onload = function() {
+    LifeGame.init(100);
+    LifeGame.getRandom();
+    setInterval(function(){LifeGame.deadOrAlive();}, 50);
+}
+</script> 
+</head>
+<body>
+</body>
+</html>
