@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>localStorage</title>
+<script type="text/javascript" charset="utf-8" src="javascript/localStorage.js"></script>
+<script type="text/javascript">
+    var webStorage = new WEBSTORAGE;
+    var dom = new DOM;
+    
+    window.addEventListener('load', function() {
+        document.getElementById('idSet').addEventListener('click', function(event){
+            var key = dom.get('key'),
+                value = dom.get('value');
+            webStorage.set(key, value);
+        });
+        document.getElementById('idGet').addEventListener('click', function(event){
+            var key = dom.get('key');
+            webStorage.get(key);
+        });
+        document.getElementById('idGetAll').addEventListener('click', function(event){
+            webStorage.getAll();
+        });
+        document.getElementById('idRemove').addEventListener('click', function(event){
+            var key = dom.get('key');
+            webStorage.remove(key);
+        });
+        document.getElementById('idRemoveAll').addEventListener('click', function(event){
+            webStorage.removeAll();
+        });
+    });
+</script> 
+</head>
+<body>
+<div>
+    key:<input type="text" id='key' value="">
+</div>
+<div>
+    value:<input type="text" id='value' value="">
+</div>
+<div>
+    <input type="button" value="SET" id="idSet">
+    <input type="button" value="GET" id="idGet">
+    <input type="button" value="GET ALL" id="idGetAll">
+    <input type="button" value="REMOVE" id="idRemove">
+    <input type="button" value="REMOVE ALL" id="idRemoveAll">
+</div>
+</body>
+</html>
