@@ -1,0 +1,152 @@
+<!DOCTYPE lang=ja>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript">
+var katsuo = function() {
+    var HTTP = null,             // ファイル読み取り用オブジェクト
+        SIZE = [{"key": "S", "min":  0, "max": 50 },
+                {"key": "M", "min": 50, "max": 75 },
+                {"key": "L", "min": 75, "max": 999}];     // サイズ定義
+
+    /*
+    * ClassSize:クラスSize
+    * count:魚の数
+    * total:魚の総量
+    */
+    var ClassSize = function() {
+        this.count = 0;
+        this.total = 0;
+    }
+
+    /*
+    * CreateXMLHttpRequest:ファイル読み取り用オブジェクト生成
+    * 戻り値：XMLHttpRequest（Chorme, Safari等）　ActiveXObject（IE）
+    */
+    var CreateXMLHttpRequest = function() {
+        var xhr = null;
+
+        try {
+            xhr = new XMLHttpRequest();
+            xhr.overrideMimeType('text/xml; charset=Shift-JIS');
+        }
+        catch(e) {
+            try {
+                xhr = new ActiveXObject("Msxml2.XMLHTTP");
+            }
+            catch(e) {
+                try {
+                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                catch(e) {
+                    return null;
+                }
+            }
+        }
+
+        return xhr;
+    }
+
+    /*
+    * _SetSize:カツオの数と総量をサイズ別にクラスへセットする
+    * arrayData:クラスSize
+    * size:カツオの重さ（g）
+    */
+    function SetSize(arrayData, size) {
+        arrayData[IsSize(size)].count++;
+        arrayData[IsSize(size)].total += parseFloat(size);
+
+        return;
+    }
+
+    /*
+    * _IsSize:ClassSizeのmin, maxの範囲とカツオの重さを比較して対象のサイズを判定する
+    * size:カツオの重さ（g）
+    * 戻り値：ClassSizeのKey
+    */
+    function IsSize(size) {
+        var key = "A";
+
+        for(var i=0, length=SIZE.length; i<length; i++) {
+//console.log("size:" + size + "   SIZE[i].min:" + SIZE[i].min + "   SIZE[i].max:" + SIZE[i].max + "   SIZE[i].key:" + SIZE[i].key);
+            if (size >= SIZE[i].min && size < SIZE[i].max) {
+
+                return SIZE[i].key;
+            }
+        }
+    }
+
+    /*
+    * _IsKatsuo:魚の種類がカツオであることを判定する
+    * fishName:魚の種類
+    * 戻り値：カツオである（true）　カツオではない（false）
+    */
+    function IsKatsuo(fishName) {
+        return ((fishName == "カツオ") ? true : false);
+    }
+
+    /*
+    * _Round:指定した小数点の桁数で四捨五入する。小数点以下は丸め位置固定で出力する。 （例：68を小数点第2位で丸める＝68.00）
+    * value:値
+    * digit:桁数
+    * 戻り値：指定した小数点の桁数で四捨五入された値
+    */
+    function Round(value, digit) {
+        return (Math.round(value * Math.pow(10, digit)) / Math.pow(10, digit)).toFixed(digit);
+    }
+
+    return {
+        /*
+        * GetCsvFile:ファイル読み取り用オブジェクト生成
+        * filePath:読み取りファイル相対パス
+        * 戻り値：読み込んだCSVファイルを改行コード（LF）で区切った配列
+        */
+        GetCsvFile: function(filePath) {
+            HTTP = CreateXMLHttpRequest();
+            HTTP.open("GET", filePath, false);
+            HTTP.send(null);
+
+            return HTTP.responseText.split(String.fromCharCode(10)); 
+        },
+
+        /*
+        * GetArray:読み込んだCSVファイルの内容から魚の種類、サイズを判定して数、総量を集計
+        * csvData:読み込んだCSVファイルを改行コード（LF）で区切った配列
+        * 戻り値：カツオのサイズ別の数・総量
+        */
+        GetArray: function(csvData) {
+            var arrayRetn = [],
+                cells;
+
+            for (var i=0, length=SIZE.length; i<length; i++) {
+                arrayRetn[SIZE[i]] = new ClassSize();
+            }
+
+            for (var i=0, lines=csvData.length; i<lines; i++) {
+                cells = csvData[i].split(",");
+                if (IsKatsuo(cells[0])) {
+                    SetSize(arrayRetn, cells[1]);
+                }
+            }
+
+            return arrayRetn;
+        },
+
+        /*
+        * WriteLine:定型フォーマットで画面に出力
+        * data:カツオのサイズ別の数・総量
+        */
+        WriteLine: function(data) {
+            for (var i in data) {
+                document.write(i + "(" + data[i].count + "): " + _Round((data[i].total / data[i].count), 2) + "cm<br>");
+            }
+        }
+    }
+}
+window.onload = function() {
+    var Katsuo = new katsuo();
+    Katsuo.WriteLine(Katsuo.GetArray(Katsuo.GetCsvFile('katsuo1000.csv')));
+}
+</script>
+<html>
+<body>
+</body>
+</html>

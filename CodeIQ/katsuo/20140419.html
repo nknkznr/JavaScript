@@ -1,0 +1,89 @@
+<!DOCTYPE lang=ja>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript">
+var HttpObj = null,
+    Size = ["S", "M", "L"];
+var ClassSize = function() {
+    this.count = 0;
+    this.total = 0;
+}
+var CreateXMLHttpRequest = function() {
+    var xhr = null;
+
+    try {
+        // Chrome, Safari等
+        xhr = new XMLHttpRequest();
+        xhr.overrideMimeType('text/xml; charset=Shift-JIS');
+    }
+    catch(e) {
+        // IE
+        try {
+            xhr = new ActiveXObject("Msxml2.XMLHTTP");
+        }
+        catch(e) {
+            try {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            catch(e) {
+                return null;
+            }
+        }
+    }
+
+    return xhr;
+}
+function GetCsvFile(filePath) {
+    HttpObj = CreateXMLHttpRequest();
+    HttpObj.open("GET", filePath, false);
+    HttpObj.send(null);
+
+    return HttpObj.responseText.split(String.fromCharCode(10)); 
+}
+function GetArray(csvData) {
+    var arrayRetn = [],
+        cells;
+
+    for (var i=0, length=Size.length; i<length; i++) {
+        arrayRetn[Size[i]] = new ClassSize();
+    }
+
+    for (var i=0, lines=csvData.length; i<lines; i++) {
+        cells = csvData[i].split(",");
+        if (IsKatsuo(cells[0])) {
+            SetSize(arrayRetn, cells[1]);
+        }
+    }
+
+    function SetSize(arrayData, size) {
+        arrayData[IsSize(size)].count++;
+        arrayData[IsSize(size)].total += parseFloat(size);
+
+        function IsSize(size) {
+            return ((size >= 75) ? "L" : ((size < 50) ? "S" : "M"));
+        }
+
+        return;
+    }
+    function IsKatsuo(fishName) {
+        return ((fishName == "カツオ") ? true : false);
+    }
+
+    return arrayRetn;
+}
+function WriteLine(data) {
+    for (var i in data) {
+        document.write(i + "(" + data[i].count + "): " + Round(data[i].total, data[i].count, 2) + "cm<br>");
+    }
+
+    function Round(value, count, digit) {
+        return (Math.round((value / count) * Math.pow(10, digit)) / Math.pow(10, digit)).toFixed(digit);
+    }
+}
+window.onload = function() {
+    WriteLine(GetArray(GetCsvFile('katsuo1000.csv')));
+}
+</script>
+<html>
+<body>
+</body>
+</html>
